@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "description": "CodeForge AI Autonomous Software Engineering Operating System",
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -10,6 +15,6 @@
     "test": "turbo run test"
   },
   "devDependencies": {
-    "turbo": "^2.0.0"
+    "turbo": "^2.4.4"
   }
 }

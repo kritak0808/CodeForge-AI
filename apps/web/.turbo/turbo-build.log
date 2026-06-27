@@ -1,0 +1,52 @@
+
+> web@1.0.0 build
+> next build
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\krita\Documents\CodeForge AI\package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * C:\Users\krita\Documents\CodeForge AI\apps\web\package-lock.json
+
+   ▲ Next.js 15.5.19
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2.5s
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/14) ...
+   Generating static pages (3/14) 
+   Generating static pages (6/14) 
+   Generating static pages (10/14) 
+ ✓ Generating static pages (14/14)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                    4.89 kB         119 kB
+├ ○ /_not-found                            993 B         103 kB
+├ ○ /admin                               2.47 kB         121 kB
+├ ○ /agents                              4.29 kB         118 kB
+├ ○ /approvals                           2.26 kB         121 kB
+├ ○ /cost                                4.23 kB         118 kB
+├ ○ /enterprise                          3.05 kB         121 kB
+├ ○ /login                               4.64 kB         107 kB
+├ ○ /observability                       2.64 kB         121 kB
+├ ○ /projects                            2.92 kB         121 kB
+├ ○ /settings                            4.43 kB         118 kB
+├ ○ /workflows                           4.57 kB         118 kB
+└ ƒ /workflows/[id]                      4.39 kB         123 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/255-98a0bdaa30757bda.js       46.2 kB
+  ├ chunks/4bd1b696-c023c6e3521b1417.js  54.2 kB
+  └ other shared chunks (total)          1.99 kB
+
+
+ƒ Middleware                             34.1 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
