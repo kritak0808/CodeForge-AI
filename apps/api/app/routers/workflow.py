@@ -18,7 +18,7 @@ class CommentsPayload(BaseModel):
 
 
 # ── GET /workflows ──────────────────────────────────────────────────────────
-@router.get("/", response_model=dict)
+@router.get("")
 async def list_workflows(
     project_id: Optional[uuid.UUID] = None,
     skip: int = 0,

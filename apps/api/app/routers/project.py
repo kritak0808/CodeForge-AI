@@ -23,7 +23,7 @@ async def create_project(
         "error": None
     }
 
-@router.get("/")
+@router.get("")
 async def list_projects(
     skip: int = 0,
     limit: int = 100,

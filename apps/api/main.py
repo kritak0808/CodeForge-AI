@@ -156,6 +156,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,
+    redirect_slashes=False,
 )
 
 register_exception_handlers(app)
