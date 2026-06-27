@@ -1,0 +1,145 @@
+# Default values for codeforge-engine.
+# This is a YAML-formatted file.
+
+global:
+  environment: production
+  imageRegistry: ghcr.io/kritak0808/roadsense-ai
+
+# Dependency Enablers (for Bitnami chart dependencies)
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: "secure_production_password_must_change"
+    database: "codeforge_production"
+
+redis:
+  enabled: true
+  auth:
+    password: "secure_redis_password_must_change"
+
+qdrant:
+  enabled: true
+  persistence:
+    size: 10Gi
+
+kafka:
+  enabled: true
+  replicaCount: 1
+
+# CodeForge Microservices Definitions
+services:
+  apiGateway:
+    replicaCount: 2
+    image:
+      repository: codeforge-api-gateway
+      tag: latest
+      pullPolicy: IfNotPresent
+    containerPort: 8000
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 80
+
+  agentOrchestrator:
+    replicaCount: 2
+    image:
+      repository: codeforge-agent-orchestrator
+      tag: latest
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+  agentWorkers:
+    replicaCount: 3
+    image:
+      repository: codeforge-agent-workers
+      tag: latest
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+
+  approvalService:
+    replicaCount: 1
+    image:
+      repository: codeforge-approval-service
+      tag: latest
+      pullPolicy: IfNotPresent
+    containerPort: 8001
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  notificationService:
+    replicaCount: 1
+    image:
+      repository: codeforge-notification-service
+      tag: latest
+      pullPolicy: IfNotPresent
+    containerPort: 8002
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  webFrontend:
+    replicaCount: 2
+    image:
+      repository: codeforge-web-frontend
+      tag: latest
+      pullPolicy: IfNotPresent
+    containerPort: 3000
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+# Ingress Controller Config
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: codeforge.ai
+      paths:
+        - path: /
+          pathType: Prefix
+          serviceName: web-frontend
+          port: 3000
+        - path: /api
+          pathType: Prefix
+          serviceName: api-gateway
+          port: 8000
+  tls:
+    - secretName: codeforge-tls
+      hosts:
+        - codeforge.ai

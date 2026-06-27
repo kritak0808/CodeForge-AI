@@ -1,0 +1,15 @@
+apiVersion: v2
+name: codeforge-engine
+description: Helm chart to deploy CodeForge AI Autonomous Software Engineering System
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+dependencies:
+  - name: postgresql
+    version: "12.1.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: redis
+    version: "17.13.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled

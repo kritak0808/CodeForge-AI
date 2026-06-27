@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "shared-memory"
+version = "1.0.0"
+description = "Shared memory synchronization drivers for CodeForge AI"
+authors = ["CodeForge AI Team"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+redis = "^5.0.3"
+psycopg2-binary = "^2.9.9"
+sqlalchemy = "^2.0.28"
+qdrant-client = "^1.8.0"
+pydantic = "^2.6.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

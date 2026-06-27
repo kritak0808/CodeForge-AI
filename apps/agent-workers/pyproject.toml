@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "agent-workers"
+version = "1.0.0"
+description = "CrewAI Worker Agents for CodeForge AI"
+authors = ["CodeForge AI Team"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+crewai = "^0.22.0"
+langchain = "^0.1.13"
+langchain-openai = "^0.1.1"
+langchain-anthropic = "^0.1.4"
+pydantic = "^2.6.4"
+kafka-python = "^2.0.2"
+qdrant-client = "^1.8.0"
+redis = "^5.0.3"
+requests = "^2.31.0"
+opentelemetry-api = "^1.23.0"
+opentelemetry-sdk = "^1.23.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

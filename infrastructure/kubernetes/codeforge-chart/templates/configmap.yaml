@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: codeforge-config
+data:
+  ENV: "{{ .Values.global.environment }}"
+  DATABASE_URL: "postgresql+asyncpg://postgres:{{ .Values.postgresql.auth.postgresPassword }}@codeforge-postgresql:5432/{{ .Values.postgresql.auth.database }}"
+  REDIS_URL: "redis://:{{ .Values.redis.auth.password }}@codeforge-redis:6379/0"
+  KAFKA_BOOTSTRAP_SERVERS: "codeforge-kafka:9092"
+  QDRANT_HOST: "codeforge-qdrant"
+  NEXT_PUBLIC_API_URL: "http://api-gateway:8000"

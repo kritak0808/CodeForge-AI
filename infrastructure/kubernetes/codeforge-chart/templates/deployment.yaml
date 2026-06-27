@@ -1,0 +1,196 @@
+# 1. API Gateway Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  labels:
+    app: api-gateway
+spec:
+  replicas: {{ .Values.services.apiGateway.replicaCount }}
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.services.apiGateway.image.repository }}:{{ .Values.services.apiGateway.image.tag }}"
+          imagePullPolicy: {{ .Values.services.apiGateway.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.apiGateway.containerPort }}
+          envFrom:
+            - configMapRef:
+                name: codeforge-config
+          resources:
+            {{- toYaml .Values.services.apiGateway.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.services.apiGateway.containerPort }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.services.apiGateway.containerPort }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+---
+# 2. Agent Orchestrator Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-orchestrator
+  labels:
+    app: agent-orchestrator
+spec:
+  replicas: {{ .Values.services.agentOrchestrator.replicaCount }}
+  selector:
+    matchLabels:
+      app: agent-orchestrator
+  template:
+    metadata:
+      labels:
+        app: agent-orchestrator
+    spec:
+      containers:
+        - name: agent-orchestrator
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.services.agentOrchestrator.image.repository }}:{{ .Values.services.agentOrchestrator.image.tag }}"
+          imagePullPolicy: {{ .Values.services.agentOrchestrator.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: codeforge-config
+          resources:
+            {{- toYaml .Values.services.agentOrchestrator.resources | nindent 12 }}
+---
+# 3. Agent Workers Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-workers
+  labels:
+    app: agent-workers
+spec:
+  replicas: {{ .Values.services.agentWorkers.replicaCount }}
+  selector:
+    matchLabels:
+      app: agent-workers
+  template:
+    metadata:
+      labels:
+        app: agent-workers
+    spec:
+      containers:
+        - name: agent-workers
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.services.agentWorkers.image.repository }}:{{ .Values.services.agentWorkers.image.tag }}"
+          imagePullPolicy: {{ .Values.services.agentWorkers.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: codeforge-config
+          resources:
+            {{- toYaml .Values.services.agentWorkers.resources | nindent 12 }}
+---
+# 4. Approval Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: approval-service
+  labels:
+    app: approval-service
+spec:
+  replicas: {{ .Values.services.approvalService.replicaCount }}
+  selector:
+    matchLabels:
+      app: approval-service
+  template:
+    metadata:
+      labels:
+        app: approval-service
+    spec:
+      containers:
+        - name: approval-service
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.services.approvalService.image.repository }}:{{ .Values.services.approvalService.image.tag }}"
+          imagePullPolicy: {{ .Values.services.approvalService.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.approvalService.containerPort }}
+          envFrom:
+            - configMapRef:
+                name: codeforge-config
+          resources:
+            {{- toYaml .Values.services.approvalService.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.services.approvalService.containerPort }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.services.approvalService.containerPort }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+---
+# 5. Notification Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  labels:
+    app: notification-service
+spec:
+  replicas: {{ .Values.services.notificationService.replicaCount }}
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.services.notificationService.image.repository }}:{{ .Values.services.notificationService.image.tag }}"
+          imagePullPolicy: {{ .Values.services.notificationService.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.notificationService.containerPort }}
+          resources:
+            {{- toYaml .Values.services.notificationService.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.services.notificationService.containerPort }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+# 6. Web Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-frontend
+  labels:
+    app: web-frontend
+spec:
+  replicas: {{ .Values.services.webFrontend.replicaCount }}
+  selector:
+    matchLabels:
+      app: web-frontend
+  template:
+    metadata:
+      labels:
+        app: web-frontend
+    spec:
+      containers:
+        - name: web-frontend
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.services.webFrontend.image.repository }}:{{ .Values.services.webFrontend.image.tag }}"
+          imagePullPolicy: {{ .Values.services.webFrontend.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.webFrontend.containerPort }}
+          envFrom:
+            - configMapRef:
+                name: codeforge-config
+          resources:
+            {{- toYaml .Values.services.webFrontend.resources | nindent 12 }}

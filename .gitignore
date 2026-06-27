@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+jspm_packages/
+web_modules/
+
+# Next.js build outputs
+.next/
+out/
+build/
+dist/
+
+# Python environment folders
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Terraform output files
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Environments and secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Databases
+*.db
+

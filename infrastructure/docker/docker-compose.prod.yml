@@ -1,0 +1,242 @@
+version: '3.8'
+
+networks:
+  frontend-network:
+    driver: bridge
+  backend-network:
+    driver: bridge
+    internal: true
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: codeforge-postgres-prod
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secure_production_password_must_change
+      POSTGRES_DB: codeforge_production
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: codeforge-redis-prod
+    command: redis-server --appendonly yes --requirepass secure_redis_password_must_change
+    volumes:
+      - redis_prod_data:/data
+    networks:
+      - backend-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "secure_redis_password_must_change", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.8.0
+    container_name: codeforge-qdrant-prod
+    volumes:
+      - qdrant_prod_data:/qdrant/storage
+    networks:
+      - backend-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: codeforge-zookeeper-prod
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - backend-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: codeforge-kafka-prod
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  api-gateway:
+    build:
+      context: ../../apps/api
+      dockerfile: Dockerfile
+    container_name: codeforge-api-gateway-prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "80:8000"
+    environment:
+      - ENV=production
+      - DATABASE_URL=postgresql+asyncpg://postgres:secure_production_password_must_change@postgres:5432/codeforge_production
+      - REDIS_URL=redis://:secure_redis_password_must_change@redis:6379/0
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    networks:
+      - frontend-network
+      - backend-network
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  agent-orchestrator:
+    build:
+      context: ../../apps/agent-orchestrator
+      dockerfile: Dockerfile
+    container_name: codeforge-agent-orchestrator-prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:secure_production_password_must_change@postgres:5432/codeforge_production
+      - REDIS_URL=redis://:secure_redis_password_must_change@redis:6379/0
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    networks:
+      - backend-network
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
+  agent-workers:
+    build:
+      context: ../../apps/agent-workers
+      dockerfile: Dockerfile
+    container_name: codeforge-agent-workers-prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:secure_production_password_must_change@postgres:5432/codeforge_production
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - QDRANT_HOST=qdrant
+    networks:
+      - backend-network
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+
+  approval-service:
+    build:
+      context: ../../apps/approval-service
+      dockerfile: Dockerfile
+    container_name: codeforge-approval-service-prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:secure_production_password_must_change@postgres:5432/codeforge_production
+    networks:
+      - frontend-network
+      - backend-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  notification-service:
+    build:
+      context: ../../apps/notification-service
+      dockerfile: Dockerfile
+    container_name: codeforge-notification-service-prod
+    ports:
+      - "8002:8002"
+    networks:
+      - frontend-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  web-frontend:
+    build:
+      context: ../../apps/web
+      dockerfile: Dockerfile
+    container_name: codeforge-web-frontend-prod
+    depends_on:
+      - api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api-gateway:8000
+      - NODE_ENV=production
+    networks:
+      - frontend-network
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
+volumes:
+  postgres_prod_data:
+  redis_prod_data:
+  qdrant_prod_data:
