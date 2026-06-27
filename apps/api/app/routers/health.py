@@ -7,7 +7,7 @@ from app.config import settings
 
 router = APIRouter(prefix="/health", tags=["health"])
 
-@router.get("/", status_code=status.HTTP_200_OK)
+@router.get("", status_code=status.HTTP_200_OK)
 async def check_health(db: AsyncSession = Depends(get_db)):
     db_status = "unhealthy"
     redis_status = "disabled" if settings.REDIS_DISABLED else "unhealthy"
